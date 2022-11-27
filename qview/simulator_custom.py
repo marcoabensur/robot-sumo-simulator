@@ -18,7 +18,7 @@ import math
 from robot import *
 from led_stripe import *
 
-USE_PS3_CONTROLLER = False
+USE_PS3_CONTROLLER = True
 
 ROBOT_SIZE_PIXELS = 60
 ARENA_RADIUS_PIXELS = 225
@@ -128,6 +128,8 @@ def custom_qview_init(qview):
         "ch2": 127,
         "ch3": 127,
         "ch4": 127,
+        "ch5": 127,
+        "ch6": 127,
     }
 
 
@@ -377,14 +379,25 @@ def send_game_pad():
     # y coordinate
     ch2 = 255 - gamepad_dict["ch2"]
 
-    ch3 = gamepad_dict["ch3"]
+    if (gamepad_dict["ch3"]):
+        ch3 = 255
+    else:
+        ch3 = 127
 
-    ch4 = gamepad_dict["ch4"]
+    if (gamepad_dict["ch4"]):
+        ch4 = 255
+    else:
+        ch4 = 127
+    
+    if (gamepad_dict["ch6"]):
+        ch6 = 255
+    else:
+        ch6 = 127
 
     # Send only when there is change so that the simulator does not get slow
     if (last_gamepad[0] != ch1 or last_gamepad[1] != ch2 or last_gamepad[2] != ch3 or last_gamepad[3] != ch3):
         send_radio_command_ch1_ch2(ch1, ch2)
-        send_radio_command_ch3_ch4_ch6(ch3, ch4, 0)
+        send_radio_command_ch3_ch4_ch6(ch3, ch4, ch6)
         
     last_gamepad = (ch1, ch2, ch3, ch4)
 
@@ -590,10 +603,16 @@ def gamepad_thread():
             gamepad_dict["ch1"] = event[0].state
         elif (event[0].code == "ABS_RY"):
             gamepad_dict["ch2"] = event[0].state
-        elif (event[0].code == "BTN_DPAD_RIGHT"):
+        elif (event[0].code == "BTN_SOUTH"):
             gamepad_dict["ch3"] = event[0].state
-        elif (event[0].code == "BTN_DPAD_UP"):
+        elif (event[0].code == "BTN_TL"):
             gamepad_dict["ch4"] = event[0].state
+        elif (event[0].code == "BTN_DPAD_UP"):
+            gamepad_dict["ch5"] = event[0].state
+        elif (event[0].code == "BTN_TR"):
+            gamepad_dict["ch6"] = event[0].state
+        elif (event[0].code != "SYN_REPORT"):
+            print(event[0].code)
 
 
 def bluetooth_thread():
