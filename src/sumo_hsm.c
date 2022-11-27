@@ -216,7 +216,7 @@ static QState SumoHSM_LineSubmachine_LineTurnRight  (SumoHSM * const me, QEvt co
 static QState SumoHSM_LineSubmachine_LineTurnRight_e(SumoHSM * const me);
 static QState SumoHSM_LineSubmachine_LineTurnRight_x(SumoHSM * const me);
 static QMState const SumoHSM_LineSubmachine_LineTurnRight_s = {
-    &SumoHSM_LineSubmachine_LineGoBack_s, /* superstate */
+    &SumoHSM_LineSubmachine_s, /* superstate */
     Q_STATE_CAST(&SumoHSM_LineSubmachine_LineTurnRight),
     Q_ACTION_CAST(&SumoHSM_LineSubmachine_LineTurnRight_e),
     Q_ACTION_CAST(&SumoHSM_LineSubmachine_LineTurnRight_x),
@@ -226,7 +226,7 @@ static QState SumoHSM_LineSubmachine_LineTurnLeft  (SumoHSM * const me, QEvt con
 static QState SumoHSM_LineSubmachine_LineTurnLeft_e(SumoHSM * const me);
 static QState SumoHSM_LineSubmachine_LineTurnLeft_x(SumoHSM * const me);
 static QMState const SumoHSM_LineSubmachine_LineTurnLeft_s = {
-    &SumoHSM_LineSubmachine_LineGoBack_s, /* superstate */
+    &SumoHSM_LineSubmachine_s, /* superstate */
     Q_STATE_CAST(&SumoHSM_LineSubmachine_LineTurnLeft),
     Q_ACTION_CAST(&SumoHSM_LineSubmachine_LineTurnLeft_e),
     Q_ACTION_CAST(&SumoHSM_LineSubmachine_LineTurnLeft_x),
@@ -285,7 +285,7 @@ static QMState const SumoHSM_PreStrategy_PreStrategy_1_s = {
 static QState SumoHSM_PreStrategy_pre_strategy_0_sub2  (SumoHSM * const me, QEvt const * const e);
 static QState SumoHSM_PreStrategy_pre_strategy_0_sub2_e(SumoHSM * const me);
 static QMState const SumoHSM_PreStrategy_pre_strategy_0_sub2_s = {
-    &SumoHSM_PreStrategy_PreStrategy_1_s, /* superstate */
+    &SumoHSM_PreStrategy_s, /* superstate */
     Q_STATE_CAST(&SumoHSM_PreStrategy_pre_strategy_0_sub2),
     Q_ACTION_CAST(&SumoHSM_PreStrategy_pre_strategy_0_sub2_e),
     Q_ACTION_NULL, /* no exit action */
@@ -294,7 +294,7 @@ static QMState const SumoHSM_PreStrategy_pre_strategy_0_sub2_s = {
 static QState SumoHSM_PreStrategy_pre_strategy_0_sub1  (SumoHSM * const me, QEvt const * const e);
 static QState SumoHSM_PreStrategy_pre_strategy_0_sub1_e(SumoHSM * const me);
 static QMState const SumoHSM_PreStrategy_pre_strategy_0_sub1_s = {
-    &SumoHSM_PreStrategy_PreStrategy_1_s, /* superstate */
+    &SumoHSM_PreStrategy_s, /* superstate */
     Q_STATE_CAST(&SumoHSM_PreStrategy_pre_strategy_0_sub1),
     Q_ACTION_CAST(&SumoHSM_PreStrategy_pre_strategy_0_sub1_e),
     Q_ACTION_NULL, /* no exit action */
@@ -403,6 +403,7 @@ static QState SumoHSM_Idle_e(SumoHSM * const me) {
     drive(0,0);
     me->strategy = 0;
     me->pre_strategy = 0;
+    QTimeEvt_disarm(&me->timeEvt);
     QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_SEC/2, BSP_TICKS_PER_SEC/2);
 
     if (adc_get_low_battery()){
@@ -511,6 +512,7 @@ static QState SumoHSM_RCWait_e(SumoHSM * const me) {
     drive(0,0);
     driving_disable();
     led_stripe_set_all(color_blue);
+    QTimeEvt_disarm(&me->timeEvt);
     QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_SEC/10, BSP_TICKS_PER_SEC/10);
     return QM_ENTRY(&SumoHSM_RCWait_s);
 }
@@ -766,7 +768,7 @@ static QState SumoHSM_AutoWait(SumoHSM * const me, QEvt const * const e) {
 static QState SumoHSM_StepsStrategy_e(SumoHSM * const me) {
     drive(0,0);
     uint32_t small_step_wait = parameters.step_wait_time_ms * BSP_TICKS_PER_MILISSEC;
-    QTimeEvt_armX(&me->timeEvt, small_step_wait, small_step_wait);
+    QTimeEvt_rearm(&me->timeEvt, small_step_wait);
     return QM_ENTRY(&SumoHSM_StepsStrategy_s);
 }
 /*${AOs::SumoHSM::SM::StepsStrategy} */
@@ -783,13 +785,15 @@ static QState SumoHSM_StepsStrategy(SumoHSM * const me, QEvt const * const e) {
         case TIMEOUT_SIG: {
             drive(100,100);
             uint32_t small_step_advance_time = parameters.step_advance_time_ms * BSP_TICKS_PER_MILISSEC;
-            QTimeEvt_armX(&me->timeEvt_2, small_step_advance_time, 0);
+            QTimeEvt_rearm(&me->timeEvt_2, small_step_advance_time);
             status_ = QM_HANDLED();
             break;
         }
         /*${AOs::SumoHSM::SM::StepsStrategy::TIMEOUT_2} */
         case TIMEOUT_2_SIG: {
             drive(0,0);
+            uint32_t small_step_wait = parameters.step_wait_time_ms * BSP_TICKS_PER_MILISSEC;
+            QTimeEvt_rearm(&me->timeEvt, small_step_wait);
             status_ = QM_HANDLED();
             break;
         }
@@ -826,7 +830,8 @@ static QState SumoHSM_StepsStrategy(SumoHSM * const me, QEvt const * const e) {
                drive(-80,80);
             } else {
                drive(0,0);
-               QTimeEvt_armX(&me->timeEvt, 3 * BSP_TICKS_PER_SEC, 3 * BSP_TICKS_PER_SEC);
+               uint32_t small_step_wait = parameters.step_wait_time_ms * BSP_TICKS_PER_MILISSEC;
+               QTimeEvt_rearm(&me->timeEvt, small_step_wait);
             }
 
 
@@ -1102,9 +1107,9 @@ static QState SumoHSM_LineSubmachine_LineGoBack_e(SumoHSM * const me) {
     uint32_t reverse_time = BSP_TICKS_PER_MILISSEC * parameters.reverse_time_ms;
 
     if (adc_line_is_white(LINE_FL)){
-        QTimeEvt_armX(&me->timeEvt, reverse_time, 0);
+        QTimeEvt_rearm(&me->timeEvt, reverse_time);
     } else {
-        QTimeEvt_armX(&me->timeEvt_2, reverse_time, 0);
+        QTimeEvt_rearm(&me->timeEvt_2, reverse_time);
     }
     return QM_ENTRY(&SumoHSM_LineSubmachine_LineGoBack_s);
 }
@@ -1161,25 +1166,25 @@ static QState SumoHSM_LineSubmachine_LineGoBack(SumoHSM * const me, QEvt const *
     return status_;
 }
 
-/*${AOs::SumoHSM::SM::LineSubmachine::LineGoBack::LineTurnRight} ...........*/
-/*${AOs::SumoHSM::SM::LineSubmachine::LineGoBack::LineTurnRight} */
+/*${AOs::SumoHSM::SM::LineSubmachine::LineTurnRight} .......................*/
+/*${AOs::SumoHSM::SM::LineSubmachine::LineTurnRight} */
 static QState SumoHSM_LineSubmachine_LineTurnRight_e(SumoHSM * const me) {
     drive(parameters.turn_speed, -parameters.turn_speed);
     uint32_t turn_time = BSP_TICKS_PER_MILISSEC * parameters.turn_180_time_ms * (0.6);
-    QTimeEvt_armX(&me->timeEvt, turn_time, 0);
+    QTimeEvt_rearm(&me->timeEvt, turn_time);
     return QM_ENTRY(&SumoHSM_LineSubmachine_LineTurnRight_s);
 }
-/*${AOs::SumoHSM::SM::LineSubmachine::LineGoBack::LineTurnRight} */
+/*${AOs::SumoHSM::SM::LineSubmachine::LineTurnRight} */
 static QState SumoHSM_LineSubmachine_LineTurnRight_x(SumoHSM * const me) {
     drive(0,0);
     (void)me; /* unused parameter */
     return QM_EXIT(&SumoHSM_LineSubmachine_LineTurnRight_s);
 }
-/*${AOs::SumoHSM::SM::LineSubmachine::LineGoBack::LineTurnRight} */
+/*${AOs::SumoHSM::SM::LineSubmachine::LineTurnRight} */
 static QState SumoHSM_LineSubmachine_LineTurnRight(SumoHSM * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
-        /*${AOs::SumoHSM::SM::LineSubmachine::LineGoBack::LineTurnRight::TIMEOUT} */
+        /*${AOs::SumoHSM::SM::LineSubmachine::LineTurnRight::TIMEOUT} */
         case TIMEOUT_SIG: {
             static struct {
                 QMState const *target;
@@ -1194,7 +1199,7 @@ static QState SumoHSM_LineSubmachine_LineTurnRight(SumoHSM * const me, QEvt cons
             status_ = QM_TRAN_XP(me->sub_LineSubmachine->XP1, &tatbl_);
             break;
         }
-        /*${AOs::SumoHSM::SM::LineSubmachine::LineGoBack::LineTurnRight::DIST_SENSOR_CHANGE} */
+        /*${AOs::SumoHSM::SM::LineSubmachine::LineTurnRight::DIST_SENSOR_CHANGE} */
         case DIST_SENSOR_CHANGE_SIG: {
             static struct {
                 QMState const *target;
@@ -1207,6 +1212,21 @@ static QState SumoHSM_LineSubmachine_LineTurnRight(SumoHSM * const me, QEvt cons
                 }
             };
             status_ = QM_TRAN_XP(me->sub_LineSubmachine->XP1, &tatbl_);
+            break;
+        }
+        /*${AOs::SumoHSM::SM::LineSubmachine::LineTurnRight::STOP} */
+        case STOP_SIG: {
+            static struct {
+                QMState const *target;
+                QActionHandler act[2];
+            } const tatbl_ = { /* tran-action table */
+                &SumoHSM_LineSubmachine_s, /* target submachine */
+                {
+                    Q_ACTION_CAST(&SumoHSM_LineSubmachine_LineTurnRight_x), /* exit */
+                    Q_ACTION_NULL /* zero terminator */
+                }
+            };
+            status_ = QM_TRAN_XP(me->sub_LineSubmachine->STOP, &tatbl_);
             break;
         }
         default: {
@@ -1217,25 +1237,25 @@ static QState SumoHSM_LineSubmachine_LineTurnRight(SumoHSM * const me, QEvt cons
     return status_;
 }
 
-/*${AOs::SumoHSM::SM::LineSubmachine::LineGoBack::LineTurnLeft} ............*/
-/*${AOs::SumoHSM::SM::LineSubmachine::LineGoBack::LineTurnLeft} */
+/*${AOs::SumoHSM::SM::LineSubmachine::LineTurnLeft} ........................*/
+/*${AOs::SumoHSM::SM::LineSubmachine::LineTurnLeft} */
 static QState SumoHSM_LineSubmachine_LineTurnLeft_e(SumoHSM * const me) {
     drive(-parameters.turn_speed, parameters.turn_speed);
     uint32_t turn_time = BSP_TICKS_PER_MILISSEC * parameters.turn_180_time_ms * (0.6);
-    QTimeEvt_armX(&me->timeEvt, turn_time, 0);
+    QTimeEvt_rearm(&me->timeEvt, turn_time);
     return QM_ENTRY(&SumoHSM_LineSubmachine_LineTurnLeft_s);
 }
-/*${AOs::SumoHSM::SM::LineSubmachine::LineGoBack::LineTurnLeft} */
+/*${AOs::SumoHSM::SM::LineSubmachine::LineTurnLeft} */
 static QState SumoHSM_LineSubmachine_LineTurnLeft_x(SumoHSM * const me) {
     drive(0,0);
     (void)me; /* unused parameter */
     return QM_EXIT(&SumoHSM_LineSubmachine_LineTurnLeft_s);
 }
-/*${AOs::SumoHSM::SM::LineSubmachine::LineGoBack::LineTurnLeft} */
+/*${AOs::SumoHSM::SM::LineSubmachine::LineTurnLeft} */
 static QState SumoHSM_LineSubmachine_LineTurnLeft(SumoHSM * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
-        /*${AOs::SumoHSM::SM::LineSubmachine::LineGoBack::LineTurnLeft::TIMEOUT} */
+        /*${AOs::SumoHSM::SM::LineSubmachine::LineTurnLeft::TIMEOUT} */
         case TIMEOUT_SIG: {
             static struct {
                 QMState const *target;
@@ -1250,7 +1270,7 @@ static QState SumoHSM_LineSubmachine_LineTurnLeft(SumoHSM * const me, QEvt const
             status_ = QM_TRAN_XP(me->sub_LineSubmachine->XP1, &tatbl_);
             break;
         }
-        /*${AOs::SumoHSM::SM::LineSubmachine::LineGoBack::LineTurnLeft::DIST_SENSOR_CHANGE} */
+        /*${AOs::SumoHSM::SM::LineSubmachine::LineTurnLeft::DIST_SENSOR_CHANGE} */
         case DIST_SENSOR_CHANGE_SIG: {
             static struct {
                 QMState const *target;
@@ -1263,6 +1283,21 @@ static QState SumoHSM_LineSubmachine_LineTurnLeft(SumoHSM * const me, QEvt const
                 }
             };
             status_ = QM_TRAN_XP(me->sub_LineSubmachine->XP1, &tatbl_);
+            break;
+        }
+        /*${AOs::SumoHSM::SM::LineSubmachine::LineTurnLeft::STOP} */
+        case STOP_SIG: {
+            static struct {
+                QMState const *target;
+                QActionHandler act[2];
+            } const tatbl_ = { /* tran-action table */
+                &SumoHSM_LineSubmachine_s, /* target submachine */
+                {
+                    Q_ACTION_CAST(&SumoHSM_LineSubmachine_LineTurnLeft_x), /* exit */
+                    Q_ACTION_NULL /* zero terminator */
+                }
+            };
+            status_ = QM_TRAN_XP(me->sub_LineSubmachine->STOP, &tatbl_);
             break;
         }
         default: {
@@ -1407,7 +1442,7 @@ static QState SumoHSM_PreStrategy_PreStrategy_3(SumoHSM * const me, QEvt const *
 /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_1} */
 static QState SumoHSM_PreStrategy_PreStrategy_1_e(SumoHSM * const me) {
     drive(-60,60);
-    QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_MILISSEC * parameters.turn_180_time_ms * (0.2), 0);
+    QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * parameters.turn_180_time_ms * (0.2));
     return QM_ENTRY(&SumoHSM_PreStrategy_PreStrategy_1_s);
 }
 /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_1} */
@@ -1437,18 +1472,18 @@ static QState SumoHSM_PreStrategy_PreStrategy_1(SumoHSM * const me, QEvt const *
     return status_;
 }
 
-/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_1::pre_strategy_0_sub2} .....*/
-/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_1::pre_strategy_0_sub2} */
+/*${AOs::SumoHSM::SM::PreStrategy::pre_strategy_0_sub2} ....................*/
+/*${AOs::SumoHSM::SM::PreStrategy::pre_strategy_0_sub2} */
 static QState SumoHSM_PreStrategy_pre_strategy_0_sub2_e(SumoHSM * const me) {
     drive(100,-100);
-    QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_MILISSEC * parameters.turn_180_time_ms * (0.4), 0);
+    QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * parameters.turn_180_time_ms * (0.4));
     return QM_ENTRY(&SumoHSM_PreStrategy_pre_strategy_0_sub2_s);
 }
-/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_1::pre_strategy_0_sub2} */
+/*${AOs::SumoHSM::SM::PreStrategy::pre_strategy_0_sub2} */
 static QState SumoHSM_PreStrategy_pre_strategy_0_sub2(SumoHSM * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
-        /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_1::pre_strategy_0_s~::TIMEOUT} */
+        /*${AOs::SumoHSM::SM::PreStrategy::pre_strategy_0_s~::TIMEOUT} */
         case TIMEOUT_SIG: {
             static QMTranActTable const tatbl_ = { /* tran-action table */
                 &SumoHSM_PreStrategy_s, /* target submachine */
@@ -1467,18 +1502,18 @@ static QState SumoHSM_PreStrategy_pre_strategy_0_sub2(SumoHSM * const me, QEvt c
     return status_;
 }
 
-/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_1::pre_strategy_0_sub1} .....*/
-/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_1::pre_strategy_0_sub1} */
+/*${AOs::SumoHSM::SM::PreStrategy::pre_strategy_0_sub1} ....................*/
+/*${AOs::SumoHSM::SM::PreStrategy::pre_strategy_0_sub1} */
 static QState SumoHSM_PreStrategy_pre_strategy_0_sub1_e(SumoHSM * const me) {
     drive(100,100);
-    QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 500, 0);
+    QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 500);
     return QM_ENTRY(&SumoHSM_PreStrategy_pre_strategy_0_sub1_s);
 }
-/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_1::pre_strategy_0_sub1} */
+/*${AOs::SumoHSM::SM::PreStrategy::pre_strategy_0_sub1} */
 static QState SumoHSM_PreStrategy_pre_strategy_0_sub1(SumoHSM * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
-        /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_1::pre_strategy_0_s~::TIMEOUT} */
+        /*${AOs::SumoHSM::SM::PreStrategy::pre_strategy_0_s~::TIMEOUT} */
         case TIMEOUT_SIG: {
             static struct {
                 QMState const *target;
