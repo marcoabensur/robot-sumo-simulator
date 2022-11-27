@@ -33,26 +33,26 @@ Used tools:
 * [QPC Bundle](https://www.state-machine.com/). This project was developed on version 7.1.2, so this is the recommended version. This will install QP/C, QM and Qview.
 
 ## Folder Structure
-.                                 
-├── build_spy                     #  Compiled Files For SImulator          
-├── build                         #  Compiled Files for STM32 target
-├── config.mk                     #  STM32 Config for microcontroller STM32F103RFT6
-├── config_substitute.mk          #  STM32 Config for microcontroller STM32F103RCT6                      
-├── cube                          #  CubeMX Files for STM32                         
-├── inc                           #  Header Common Files    
-│   ├── bsp                       #  Board Support Package Files
-│   │   ├── target-pc             #  Header Files specific for Simulator
-│   │   └── target-stm32f103      #  Header Files specific for STM32F103
-├── LICENSE.md                    #  License File      
-├── Makefile                      #  Makefile
-├── qview                         #  Folder Containing the Python Simualtor
-├── README.md                     #  This readme           
-└── src                           #  Source Common Files   
-    ├── bsp                       #  Board Suport package files
-    │   ├── target-pc             #  Source Files specific for Simulator
-    │   └── target-stm32f103      #  Source Files specific for STM32F103                                      
-├── state-machine.png             #  State Machine Photo                   
-└── sumo_hsm.qm                   #  State Machine File for qm program
+    .                                 
+    ├── build_spy                     #  Compiled Files For SImulator          
+    ├── build                         #  Compiled Files for STM32 target
+    ├── config.mk                     #  STM32 Config for microcontroller STM32F103RFT6
+    ├── config_substitute.mk          #  STM32 Config for microcontroller STM32F103RCT6                      
+    ├── cube                          #  CubeMX Files for STM32                         
+    ├── inc                           #  Header Common Files    
+    │   ├── bsp                       #  Board Support Package Files
+    │   │   ├── target-pc             #  Header Files specific for Simulator
+    │   │   └── target-stm32f103      #  Header Files specific for STM32F103
+    ├── LICENSE.md                    #  License File      
+    ├── Makefile                      #  Makefile
+    ├── qview                         #  Folder Containing the Python Simualtor
+    ├── README.md                     #  This readme           
+    └── src                           #  Source Common Files   
+        ├── bsp                       #  Board Suport package files
+        │   ├── target-pc             #  Source Files specific for Simulator
+        │   └── target-stm32f103      #  Source Files specific for STM32F103                                      
+    ├── state-machine.png             #  State Machine Photo                   
+    └── sumo_hsm.qm                   #  State Machine File for qm program
 
 ## PC Simulator
 
