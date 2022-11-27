@@ -45,7 +45,7 @@
  *
  * @return Value in new scale
  */
-inline int map(int former_value, int former_min, int former_max, int new_min, int new_max) {
+static inline int map(int former_value, int former_min, int former_max, int new_min, int new_max) {
     long int new_value;
 
     new_value = (long int) (former_value - former_min) * (new_max - new_min);
