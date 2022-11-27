@@ -1,0 +1,1 @@
+#define QF_TIMEEVT_CTR_SIZE  4U
