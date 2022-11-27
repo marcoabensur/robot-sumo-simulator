@@ -114,32 +114,19 @@ void Q_onAssert(char const * const module, int loc) {
 void QS_onCommand(uint8_t cmdId,
                   uint32_t param1, uint32_t param2, uint32_t param3)
 {
-    typedef struct {
-    /* protected: */
-        QActive super;
-
-    /* private: */
-        QTimeEvt timeEvt;
-        QTimeEvt buzzerTimeEvt;
-        uint8_t buzzerCount;
-        uint8_t strategy;
-        QTimeEvt timeEvt_2;
-    } SumoHSM;
-
     switch (cmdId) {
        case 0: { 
             BSP_GPIO_Write_Pin(IO_PORTB, IO_PIN_2 , true);
             break;
         }
         case 1: { 
-             BSP_GPIO_Write_Pin(IO_PORTB, IO_PIN_2 , false);
+            BSP_GPIO_Write_Pin(IO_PORTB, IO_PIN_2 , false);
             break;
         }
 
         case 2: { 
-            SumoHSM *me = (SumoHSM *)AO_SumoHSM;
-            me->strategy = param1;
-            printf("Strategy = %d\r\n", param1);
+            // BSP_GPIO_Write_Pin(GPIO_BUTTON_PORT, GPIO_BUTTON_PIN , true);
+            HAL_Fake_GPIO_EXTI_Callback(GPIO_BUTTON_PIN);
             break;
         }
 
@@ -176,14 +163,10 @@ void QS_onCommand(uint8_t cmdId,
         }
 
         case 5: { 
-            QEvt evt = {.sig = CHANGE_STATE_EVT_SIG};
-            QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
             break;
         }
 
         case 6: { 
-            QEvt evt = {.sig = CHANGE_STRATEGY_EVT_SIG};
-            QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
             break;
         }
 
@@ -196,7 +179,7 @@ void QS_onCommand(uint8_t cmdId,
             fake_ppm_exti_callback(0, radio_ch1_val);
             fake_ppm_exti_callback(1, radio_ch2_val);
             #elif defined (RADIO_MODE_UART) || defined (RADIO_MODE_UART_CRSF)
-            int16_t data[3] = {0, radio_ch1_val, radio_ch2_val};
+            int16_t data[4] = {0, radio_ch1_val, radio_ch2_val, 0};
             HAL_UART_Fake_UartData(UART_NUM_4, data);
             #endif 
 
@@ -206,13 +189,14 @@ void QS_onCommand(uint8_t cmdId,
         case 8: { 
             int16_t radio_ch3_val = param1;
             int16_t radio_ch4_val = param2;
+            int16_t radio_ch6_val = param3;
 
 
             #if defined (RADIO_MODE_PPM)
             fake_ppm_exti_callback(2, radio_ch3_val);
             fake_ppm_exti_callback(3, radio_ch4_val);
             #elif defined (RADIO_MODE_UART) || defined (RADIO_MODE_UART_CRSF)
-            int16_t data[3] = {1, radio_ch3_val, radio_ch4_val};
+            int16_t data[4] = {1, radio_ch3_val, radio_ch4_val, radio_ch6_val};
             HAL_UART_Fake_UartData(UART_NUM_4, data);
             #endif 
 

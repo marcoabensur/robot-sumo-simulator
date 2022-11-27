@@ -59,6 +59,7 @@ void HAL_Fake_GPIO_EXTI_Callback(uint16_t pin) {
     // Button
     if (pin == BSP_GPIO_Pin_Mapping(GPIO_BUTTON_PIN)){
         if (button_callback_function != NULL){
+            printf("Button Callback\r\n");
             button_callback_function();
         }
         return;
@@ -83,10 +84,13 @@ io_level_t BSP_GPIO_Read_Pin(io_port_t port, io_pin_t gpio_pin){
 }
 
 void BSP_GPIO_Write_Pin(io_port_t port, io_pin_t gpio_pin, io_level_t level){
+    printf("Write Port = %d, Pin = %d, State = %d\r\n", port, gpio_pin, level);
     gpio_emulation[port][gpio_pin] = level;
 }
 
 void BSP_GPIO_Toggle_Pin(io_port_t port, io_pin_t gpio_pin){
+    printf("Toggle Port = %d, Pin = %d\r\n", port, gpio_pin);
+
     gpio_emulation[port][gpio_pin] = !gpio_emulation[port][gpio_pin];
 }
 

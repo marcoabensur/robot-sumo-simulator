@@ -43,11 +43,12 @@ static bool stop_uart;
 
 static void uart_callback(void *arg) {
 
-    int16_t data[3];
+    int16_t data[4];
 
     data[0] = *(((int16_t*) (arg)) + 0); 
     data[1] = *(((int16_t*) (arg)) + 1); 
     data[2] = *(((int16_t*) (arg)) + 2);
+    data[3] = *(((int16_t*) (arg)) + 3);
 
     // Fake implementation of uart radio service
     if (data[0] == 0){
@@ -56,6 +57,7 @@ static void uart_callback(void *arg) {
     } else if (data[0] == 1){
         channels[2] = map(data[1], 0, 255, RX_RADIO_MIN_VALUE, RX_RADIO_MAX_VALUE);
         channels[3] = map(data[2], 0, 255, RX_RADIO_MIN_VALUE, RX_RADIO_MAX_VALUE);
+        channels[5] = map(data[3], 0, 255, RX_RADIO_MIN_VALUE, RX_RADIO_MAX_VALUE);
         if (!stop_uart){
             external_callback(channels, RADIO_UART_CHANNELS);
         }

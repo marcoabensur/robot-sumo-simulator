@@ -42,8 +42,8 @@ static void radio_data_interrupt_uart(uint16_t * ch_data, uint8_t ch_amount);
 /***************************************************************************************************
  * LOCAL VARIABLES
  **************************************************************************************************/
-volatile int8_t radio_data[NUM_OF_RADIO_CHANNELS];
-volatile int8_t last_radio_data[NUM_OF_RADIO_CHANNELS];
+static volatile int8_t radio_data[NUM_OF_RADIO_CHANNELS];
+static volatile int8_t last_radio_data[NUM_OF_RADIO_CHANNELS];
 
 /***************************************************************************************************
  * GLOBAL VARIABLES
@@ -53,10 +53,13 @@ volatile int8_t last_radio_data[NUM_OF_RADIO_CHANNELS];
  * LOCAL FUNCTIONS
  **************************************************************************************************/
 
+#if defined (RADIO_MODE_PPM)
+
 static void radio_dispatch_events(){
 
     QEvt evt = {.sig = RADIO_DATA_SIG};
     QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
+
 
 
     if (radio_data[RADIO_CH3] > 75 && last_radio_data[RADIO_CH3] <= 75){
@@ -69,14 +72,12 @@ static void radio_dispatch_events(){
         QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
     }
 
-    if (radio_data[RADIO_CH2] > 75 && last_radio_data[RADIO_CH2] <= 75){
+    if (radio_data[RADIO_CH3] < -75 && last_radio_data[RADIO_CH3] > -75){
         QEvt evt = {.sig = CHANGE_PRE_STRATEGY_EVT_SIG};
         QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
     }
 
 }
-
-#if defined (RADIO_MODE_PPM)
 
 static void radio_data_interrupt_ppm(uint8_t ppm_num, uint16_t ppm_val){
 
@@ -97,6 +98,29 @@ static void radio_data_interrupt_ppm(uint8_t ppm_num, uint16_t ppm_val){
 }
 
 #elif defined (RADIO_MODE_UART) || (RADIO_MODE_UART_CRSF)
+
+static void radio_dispatch_events(){
+
+
+    QEvt evt = {.sig = RADIO_DATA_SIG};
+    QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
+
+    if (radio_data[RADIO_CH3] > 75 && last_radio_data[RADIO_CH3] <= 75){
+        QEvt evt = {.sig = CHANGE_STATE_EVT_SIG};
+        QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
+    }
+
+    if (radio_data[RADIO_CH4] > 75 && last_radio_data[RADIO_CH4] <= 75){
+        QEvt evt = {.sig = CHANGE_STRATEGY_EVT_SIG};
+        QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
+    }
+
+    if (radio_data[RADIO_CH6] > 75 && last_radio_data[RADIO_CH6] <= 75){
+        QEvt evt = {.sig = CHANGE_PRE_STRATEGY_EVT_SIG};
+        QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
+    }
+
+}
 
 static void radio_data_interrupt_uart(uint16_t * ch_data, uint8_t ch_amount){
 
