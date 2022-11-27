@@ -18,7 +18,7 @@ import math
 from robot import *
 from led_stripe import *
 
-USE_PS3_CONTROLLER = True
+USE_PS3_CONTROLLER = False
 
 ROBOT_SIZE_PIXELS = 60
 ARENA_RADIUS_PIXELS = 225
