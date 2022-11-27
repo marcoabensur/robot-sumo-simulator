@@ -52,7 +52,7 @@ static void start_module_ctor(void) {
 static QState StartModule_Initial(start_module_t * const me, void const * const par) {
 
     (void)par; /* unused parameter */
-    QTimeEvt_armX(&me->timeEvt, 1000 * BSP_TICKS_PER_MILISSEC, 1000 * BSP_TICKS_PER_MILISSEC);
+    QTimeEvt_armX(&me->timeEvt, 100 * BSP_TICKS_PER_MILISSEC, 100 * BSP_TICKS_PER_MILISSEC);
 
     QS_FUN_DICTIONARY(&StartModule_Check);
 
