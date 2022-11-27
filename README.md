@@ -2,7 +2,7 @@
 
 This is a robot-sumo C program that runs both on a target hardware and on a PC machine. When running on a PC, we use a Python program to send inputs (e.g distance sensors) and receive outputs (e.g Motor data) from the C code.
 
-The simulator have the following functionalities: distance sensor simulation, line sensor simulation, motor simulation, bluetooth simulation, start module simulation, buzzer simulation, button and led simulaiton, and RF radio simulation.
+The simulator have the following functionalities: distance sensor simulation, line sensor simulation, motor simulation, bluetooth simulation, start module simulation, buzzer simulation, button and led simulaiton, RF radio simulation and EEPROM simulation
 
 The aim of this project is to allow robot sumo programmers to test their codes, without depending on the hardware or mechanical structure of the robot. Also to build a code-independant plataform that would be easy to port to another hardware if needed.
 
@@ -14,20 +14,45 @@ The code was based on QP™ Real-Time Embedded Frameworks (RTEFs) from https://w
 
 ## Table of contents
 * [Requirements](#requirements)
-* [Getting Started](#getting-started)
+* [Folder Structure](#folder-structure)
+* [PC Simulator](#pc-simulator)
+* [STM32 specific configuration](stm32-specific-configuration)
+* [State Machine And Code generation](#state-machine-and-code-generation)
+* [Extras](#extras)
+* [QM License](#qm-license)
+
 
 ## Requirements
 
 The progrram was devolped and tested on Linux. All the used tools are also available for windows, but those were not tested, so some problems may appear on the first configuration.
 
 Used tools:
- * [GNU Make](https://www.gnu.org/software/make/) for automated building. No particular version recommended.
- * [GNU ARM Embedded Toolchain](https://developer.arm.com/open-source/gnu-toolchain/gnu-rm) for building C source code for the STM32 hardware platform. Version 10-2020-q4-major used.
- * [Python 3](https://www.python.org/downloads/)
- * [QPC Bundle](https://www.state-machine.com/). This project was developed on version 7.1.2, so this is the recommended version. This will install QP/C, QM and Qview.
+* [GNU Make](https://www.gnu.org/software/make/) for automated building. No particular version recommended.
+* [GNU ARM Embedded Toolchain](https://developer.arm.com/open-source/gnu-toolchain/gnu-rm) for building C source code for the STM32 hardware platform. Version 10-2020-q4-major used.
+* [Python 3](https://www.python.org/downloads/)
+* [QPC Bundle](https://www.state-machine.com/). This project was developed on version 7.1.2, so this is the recommended version. This will install QP/C, QM and Qview.
 
- ## Folder Structure
-
+## Folder Structure
+.                                 
+├── build_spy                     #  Compiled Files For SImulator          
+├── build                         #  Compiled Files for STM32 target
+├── config.mk                     #  STM32 Config for microcontroller STM32F103RFT6
+├── config_substitute.mk          #  STM32 Config for microcontroller STM32F103RCT6                      
+├── cube                          #  CubeMX Files for STM32                         
+├── inc                           #  Header Common Files    
+│   ├── bsp                       #  Board Support Package Files
+│   │   ├── target-pc             #  Header Files specific for Simulator
+│   │   └── target-stm32f103      #  Header Files specific for STM32F103
+├── LICENSE.md                    #  License File      
+├── Makefile                      #  Makefile
+├── qview                         #  Folder Containing the Python Simualtor
+├── README.md                     #  This readme           
+└── src                           #  Source Common Files   
+    ├── bsp                       #  Board Suport package files
+    │   ├── target-pc             #  Source Files specific for Simulator
+    │   └── target-stm32f103      #  Source Files specific for STM32F103                                      
+├── state-machine.png             #  State Machine Photo                   
+└── sumo_hsm.qm                   #  State Machine File for qm program
 
 ## PC Simulator
 
@@ -111,6 +136,8 @@ In "AUTO WAIT" mode, the white led is always ON, and the other leds are red. Pre
 
 In "RC WAIT" mode, the white led keeps toggling very fast, and the other leds are blue. Pressing start button on the screen will start RC mode. To controll the robot use the arrows on the keyboard. To stop this mode press "STOP".
 
+Maybe the movement of the robot is not perfect in our machine. This must be because the parameters configurations. See parameters.c file and simulated_eeprom.txt file to change those values.
+
 ## STM32 specific configuration
 This project was made to work on a STM32 target as well as on a PC. So the folder structure and makefile are designed to use with STM32 microcontrollers. But one can adapt to any microcontroller.
 
@@ -172,19 +199,36 @@ chmod u+x qm.sh
 
 For more information read "README.md" doc on qm folder.
 
+Also add a license to use the program. See [QM License](#qm-license)
+
 Now using this program, you can edit the state machine. For more details visit https://www.state-machine.com/qm/index.html.
 
 
-After eding the state machine, annd clicking on "Tools >> Generate code" the code for the state machine will be generated on "sumo_hsm.c" file
+After eding the state machine, annd clicking on "Tools >> Generate code" the code for the state machine will be generated on "sumo_hsm.c" file.
 
 
 Below a image of the current state machine:
 ![plot](./state-machine.png)
 
+## Extras
+#### Bluetooth Simulation
 
-## Bluetooth Simulation
+The project alsos counts with a BLE emulator with python. It is possible to simulate BLE services and characteristics to comunicate with the simulator. See qview/ble_server/ble_server.py file.
 
-## Using PS3 Controller
+To use:
+```
+python3 qview/ble_server/ble_server.py
+```
+
+#### Using PS3 Controller
+It is possible to use a PS3 controller to control the robot and send events to the code. For this, connect a PS# controller on the PC and change "USE_PS3_CONTROLLER = False" to "USE_PS3_CONTROLLER = True" on "qview/simulator_custom.py" file.
+
+
+#### Real Robot
+
+This code is used on my team robot sumo project. More information on:
+* https://www.youtube.com/@raijuteam1004
+* https://github.com/team-raiju
 
 
 # QM License
