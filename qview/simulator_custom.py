@@ -611,8 +611,6 @@ def gamepad_thread():
             gamepad_dict["ch5"] = event[0].state
         elif (event[0].code == "BTN_TR"):
             gamepad_dict["ch6"] = event[0].state
-        elif (event[0].code != "SYN_REPORT"):
-            print(event[0].code)
 
 
 def bluetooth_thread():
