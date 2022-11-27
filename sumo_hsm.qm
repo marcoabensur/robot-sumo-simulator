@@ -586,7 +586,17 @@ QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 10, 0);</entry>
      </state>
      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_2}-->
      <state name="PreStrategy_2">
-      <state_glyph node="72,10,26,12"/>
+      <entry brief="turn_right">drive(60,-60);
+QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * parameters.turn_180_time_ms * (0.2));</entry>
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_2::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../../11">
+       <tran_glyph conn="72,17,3,0,13,10">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="72,10,26,12">
+       <entry box="1,2,6,2"/>
+      </state_glyph>
      </state>
      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_3}-->
      <state name="PreStrategy_3">
@@ -606,11 +616,11 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * parameters.turn_180
        <entry box="1,2,18,4"/>
       </state_glyph>
      </state>
-     <!--${AOs::SumoHSM::SM::PreStrategy::pre_strategy_0_sub2}-->
-     <state name="pre_strategy_0_sub2">
+     <!--${AOs::SumoHSM::SM::PreStrategy::pre_strategy_1_sub2}-->
+     <state name="pre_strategy_1_sub2">
       <entry brief="turn_right">drive(100,-100);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * parameters.turn_180_time_ms * (0.4));</entry>
-      <!--${AOs::SumoHSM::SM::PreStrategy::pre_strategy_0_s~::TIMEOUT}-->
+      <!--${AOs::SumoHSM::SM::PreStrategy::pre_strategy_1_s~::TIMEOUT}-->
       <tran trig="TIMEOUT" target="../.." cpref="../../4">
        <tran_glyph conn="40,53,3,2,29,12">
         <action box="0,-2,10,2"/>
@@ -620,11 +630,11 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * parameters.turn_180
        <entry box="1,2,12,3"/>
       </state_glyph>
      </state>
-     <!--${AOs::SumoHSM::SM::PreStrategy::pre_strategy_0_sub1}-->
-     <state name="pre_strategy_0_sub1">
+     <!--${AOs::SumoHSM::SM::PreStrategy::pre_strategy_1_sub1}-->
+     <state name="pre_strategy_1_sub1">
       <entry brief="motor_front">drive(100,100);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 500);</entry>
-      <!--${AOs::SumoHSM::SM::PreStrategy::pre_strategy_0_s~::TIMEOUT}-->
+      <!--${AOs::SumoHSM::SM::PreStrategy::pre_strategy_1_s~::TIMEOUT}-->
       <tran trig="TIMEOUT" target="../../9">
        <tran_glyph conn="40,36,3,0,10,9">
         <action box="0,-2,10,2"/>
@@ -632,6 +642,34 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 500);</entry>
       </tran>
       <state_glyph node="40,28,26,11">
        <entry box="1,2,15,4"/>
+      </state_glyph>
+     </state>
+     <!--${AOs::SumoHSM::SM::PreStrategy::pre_strategy_2_sub1}-->
+     <state name="pre_strategy_2_sub1">
+      <entry brief="motor_front">drive(100,100);
+QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 500);</entry>
+      <!--${AOs::SumoHSM::SM::PreStrategy::pre_strategy_2_s~::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../../12">
+       <tran_glyph conn="72,35,3,0,10,10">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="72,27,26,11">
+       <entry box="1,2,15,4"/>
+      </state_glyph>
+     </state>
+     <!--${AOs::SumoHSM::SM::PreStrategy::pre_strategy_2_sub2}-->
+     <state name="pre_strategy_2_sub2">
+      <entry brief="turn_left">drive(-100,100);
+QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * parameters.turn_180_time_ms * (0.4));</entry>
+      <!--${AOs::SumoHSM::SM::PreStrategy::pre_strategy_2_s~::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../.." cpref="../../4">
+       <tran_glyph conn="72,53,3,2,-3,12">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="72,45,26,13">
+       <entry box="1,2,12,3"/>
       </state_glyph>
      </state>
      <submachine_diagram size="134,64">
@@ -681,6 +719,9 @@ parameters_init(&amp;parameters);
 #define M_PI                3.14159265
 #endif
 
+#define MAX_STRATEGIES        2
+#define MAX_PRE_STRATEGIES    3
+
 static sumo_parameters_t parameters;
 
 /* ask QM to declare the Blinky class --------------------------------------*/
@@ -697,14 +738,14 @@ $define${AOs::SumoHSM_ctor}
 
 static void SumoHSM_change_strategy(SumoHSM * const me) {
     me-&gt;strategy++;
-    if (me-&gt;strategy &gt; 2){
+    if (me-&gt;strategy &gt;= MAX_STRATEGIES){
         me-&gt;strategy = 0;
     }
 }
 
 static void SumoHSM_change_pre_strategy(SumoHSM * const me) {
     me-&gt;pre_strategy++;
-    if (me-&gt;pre_strategy &gt; 3){
+    if (me-&gt;pre_strategy &gt;= MAX_PRE_STRATEGIES){
         me-&gt;pre_strategy = 0;
     }
 }
