@@ -239,4 +239,7 @@ On the first time running the project, it will be necessary to update the licens
 <framework name="qpc" license="../../../../qp-linux_7.1.2/qp/qpc/LICENSES/QM-EVAL-QPC.qlc"/>
 ```
 
-More information on: https://state-machine.com/qm/sm.html#sm_class
+More information on: 
+https://www.state-machine.com/licensing
+https://state-machine.com/qm/license.html
+https://state-machine.com/qm/sm.html#sm_class
