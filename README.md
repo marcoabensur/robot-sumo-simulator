@@ -240,6 +240,8 @@ On the first time running the project, it will be necessary to update the licens
 ```
 
 More information on: 
-https://www.state-machine.com/licensing
-https://state-machine.com/qm/license.html
-https://state-machine.com/qm/sm.html#sm_class
+* https://www.state-machine.com/licensing
+
+* https://state-machine.com/qm/license.html
+
+*https://state-machine.com/qm/sm.html#sm_class
