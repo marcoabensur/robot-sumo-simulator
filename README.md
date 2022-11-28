@@ -244,4 +244,4 @@ More information on:
 
 * https://state-machine.com/qm/license.html
 
-*https://state-machine.com/qm/sm.html#sm_class
+* https://state-machine.com/qm/sm.html#sm_class
